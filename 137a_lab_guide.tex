@@ -1,0 +1,171 @@
+\input{setup}
+\input{commands}
+\title{A Guide for ECE 137A Labs}
+\author{Erk Sampat}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Preliminary Comments}
+\subsection{Words of Wisdom}
+None of the labs are \textit{that} difficult. They are certainly far from impossible. If someone insists otherwise, ignore them; do not be discouraged. Plenty of students of all experience levels have completed the labs successfully in previous years.
+
+Approach each lab with almost irrational confidence that you can succeed. This will tangibly improve your ability to apply what you have learned. If you instead adopt the mindset that you are unable to complete the labs without cheating, you will struggle, and will produce a poor design that fails to meet the specifications. But with confidence, you may even come up with a design that exceeds the specifications.
+
+Although confidence is critical, none of the labs are easy, and each requires an investment of time and effort. ``Effort'' is more than the physical effort of spending hours soldering with a poor-quality soldering iron while sitting on the uncomfortable stools in the lab on a rainy day. Mental effort, i.e. critical thinking, is also required when designing, testing, and debugging a circuit. Do not outsource your thinking to ChatGPT.
+
+Remain persistent when your design does not work. For students as well as engineers with a lifetime of experience, the probability that their design works perfectly on the first attempt is low.
+\subsection{Gain; Amplifier Stages} ``Gain'' typically refers to voltage gain, which is best achieved with a common-emitter or common-source amplifier (sometimes called a ``gain stage'').
+
+An emitter or source follower has a voltage gain of less than 1, but provides high current gain. This is useful as an ``output stage'' for driving a low-impedance load on the output, which requires high current to maintain the desired voltage levels across it.\newpage
+\section{Physical Construction of Circuits}
+\begin{itemize}
+	\item Breadboard vs. perf-board:
+	\begin{itemize}
+		\item You will build the circuit for each lab on either a breadboard or a perf-board (a board with holes on one side and copper pads on the other).
+		\item If you choose to construct a circuit on a breadboard, verify with the TA that this is allowed.
+		\item Breadboard assembly is easy as it does not require soldering, but breadboards are only suitable for simple circuits. Use perf-board for more complex circuits.
+		\item If you build a complex circuit on a breadboard, the parasitic resistance, capacitance, and inductance of the breadboard connections and excess jumper wires will become significant. This can result in poor performance, imprecise/inaccurate measurements, or a completely non-functional circuit.
+	\end{itemize}
+	\item \textcolor{Red}{\textbf{Keep ALL wires as short as possible, and place all components as close to each other as possible. This is absolutely critical.}}
+	\begin{itemize}
+		\item Buy a kit of jumper wires of assorted lengths (such as ECE shop part \#WJK2).
+		\item Do NOT use long jumper wires like the ones from the ECE 5 Arduino kit.
+	\end{itemize}
+	\item If you are building your circuit on a breadboard,
+	\begin{itemize}
+		\item Do not forget how a breadboard works. The diagram below illustrates which holes are connected.
+		\input{breadboard}
+		\begin{center}
+			\rotatebox{90}{
+				\begin{circuitikz}[scale=0.4]
+					\breadboard{30}{2}{\small}			
+				\end{circuitikz}
+			}
+		\end{center}
+		\item Use the power rails to neatly connect components to the appropriate power supplies.
+		\item Whenever possible, connect components directly to each other using their leads. Only use jumper wires if absolutely necessary.
+	\end{itemize}
+	\item If you are building your circuit on a perf-board,
+	\begin{itemize}
+		\item Place components on the side \textit{without} copper pads. Solder the leads to the copper pads on the other side.
+		\item Trim all component leads after soldering. Save the trimmed leads.
+		\item To connect two components together, cut and bend an insulated jumper wire so that it neatly joins the two corresponding copper pads.
+		\item For convenience, create power rails by soldering trimmed component leads across a line of copper pads. Solder each pad to the lead.
+	\end{itemize}
+\end{itemize}
+\begin{center}
+	\begin{minipage}[b]{0.5\linewidth}
+		\centering
+		\includegraphics[height=2.5in]{breadboard} \\
+		Good breadboard construction.
+	\end{minipage}%
+	\begin{minipage}[b]{0.5\linewidth}
+		\centering
+		\includegraphics[height=2.5in]{perfboard} \\
+		Good perf-board construction.
+	\end{minipage}
+\end{center}
+\section{Circuit Design Practices}
+\begin{itemize}
+	\item Use 2N3904 (NPN) and 2N3906 (complementary PNP) BJTs for low-power parts of your circuits, such as input and gain stages. Use 2N5191 (NPN) and 2N5194 (complementary PNP) BJTs for high-power parts of your circuits, such as output stages.
+	\begin{itemize}
+		\item Transistors rated for high power (``power transistors'') generally have poor small-signal characteristics, and are thus best suited for output stages only. It is difficult to design other stages using power transistors.
+	\end{itemize}
+	\item Mount heat sinks (ECE shop part \#HS220) using mounting hardware (ECE shop part \#HSMH) to transistors carrying high power (for example, the two output transistors in a push-pull stage).
+	\begin{itemize}
+		\item The mounting hardware includes a thin, transparent mica sheet that should be placed between the transistor and the heat sink for electrical isolation. Do not throw the sheet away.
+		\item Identify which transistors in your circuit are carrying high power.
+	\end{itemize}
+	\item When using a diode-connected transistor for level-shifting across another transistor (perhaps in a push-pull output stage), both transistors need to be identical so that the $\V{be}$ drops are matched.
+	\item Place large bypass capacitors of \quf{100} or greater on each power rail, as close to the circuit as possible.
+	\item Use potentiometers (variable resistors) in bias networks. This allows for easy adjustment of bias conditions. Just make sure that the power $P=I_{R}^{2}R=V_{R}^{2}/R$ dissipated in the potentiometer does not exceed its maximum rating.
+	\item If you do not recall from 10B how potentiometers work, see the diagram below.
+	\begin{center}
+		\input{pot}
+	\end{center}
+	\item For the \dqr{8} load resistor in labs 1 and 2, use a resistor rated for sufficient power. The ECE shop sells a \dqw{5} \dqr{8.2} resistor, part \#5WR8.2 (this is close enough to \qr{8}).
+	\item For DC-blocking capacitors, use \quf{470} or greater. If the TA tells you otherwise, they are wrong and you should complain to Rodwell.
+	\begin{itemize}
+		\item If you are skeptical, consider $f=\qkhz{1}$, which is near the center of the audio band, and is the nominal frequency used for testing. We have $|1/(j2\pi fC)|=\qr{159}$ when $C=\quf{1}$ and $|1/(j2\pi fC)|=\qr{0.339}$ when $C=\quf{470}$. If the input resistance of your amplifier is \qr{100}, the former would reduce the overall gain by more than \qdb{8} (nearly a factor of 3).
+	\end{itemize}
+	\item When purchasing components from the ECE shop, verify that you were given the correct parts.
+\end{itemize}
+\section{Testing a Design}
+\begin{itemize}
+	\item \textbf{Set a current limit on the power supply} to prevent a faulty circuit from blowing itself up.
+	\begin{itemize}
+		\item First
+	\end{itemize}
+	\item Your oscilloscope probes should have a switch between ``1x'' and ``10x''. Set this to 10x.
+	\begin{itemize}
+		\item This is known as the probe attenuation. 10x attenuation is standard, as it reduces the capacitance imposed by the probe on the circuit that is being probed.
+	\end{itemize}
+	\item Also set the attenuation appropriately in the oscilloscope's settings for the channel.
+	\begin{itemize}
+		\item A 10x-attenuation probe will divide the amplitude of the signal by 10. Setting this on the oscilloscope will make it adjust for this, so that the voltage scaling is accurate.
+		\item Measure a known DC voltage value from a power supply to confirm that your probe attenuation setting matches that of the actual probe.
+	\end{itemize}
+	\item use scope function gen, set amplitude properly and check it
+	\begin{itemize}
+		\item how to determine limit based on tested input voltages
+	\end{itemize}
+	\item do not use auto-set on scope
+\end{itemize}
+Below is a general procedure to follow when testing your design:
+decide what exactly you are planning to test, come up with a procedure, figure out values for testing, figure out expected output values
+\section{Debugging a Faulty Design}
+When debugging a faulty design, you must think critically, be observant, and ask yourself the following questions:
+\begin{itemize}
+	\item What exactly is the problem? Narrow this down to be as specific as possible.
+	\item What could cause this problem?
+	\item What metrics and measurements are related to this problem? What results should I expect ?
+\end{itemize}
+examples: short, railing, output missing on stage, how much current to expect given input amplitude and gain
+\section{Lab-Specific Tips}
+\subsection{Lab 1 Tips}
+\begin{itemize}
+	\item Build this lab on a breadboard (verify with the TA that this is allowed).
+	\item Attempt a two-stage design instead of a single-stage design. This will make it significantly easier to meet the specifications, and it is far more intuitive.
+	\begin{itemize}
+		\item In a multi-stage amplifier, the bias conditions of the output of one stage must match the bias conditions of the input of the following stage.
+		\item Use a common-emitter stage on the input for gain, followed by an emitter follower output stage.
+		\item For the input stage, use 2N3904 or 2N3906. If you feel ambitious, use a MOSFET (making it a common-source stage). This will drastically increase the input impedance and you may earn extra credit.
+		\item For the output stage, use 2N5191 or 2N5194.
+		\item Build and test the output stage first. Measure its gain and input resistance, then adjust the design of the common-emitter gain stage accordingly. Then build and test the common-emitter stage. If it works as expected, connect it to the output stage.
+	\end{itemize}
+	\item If you build a single-stage amplifier, use 2N5191 and put a large heat sink on it.
+\end{itemize}
+\subsection{Lab 2 Tips}
+\begin{itemize}
+	\item Construct this lab on a perf-board.
+	\item As discussed earlier, do not use power transistors for your input and/or gain stages.
+	\begin{itemize}
+		\item Use 2N3904/2N3906 for the input differential pair and level-shifting stages. Use 2N5191/2N5194
+	\end{itemize}
+\end{itemize}
+
+must use same transistor for diode-connected level shift
+
+
+\subsection{Lab 3 Tips}
+test op amp in unity gain and constant gain config; 147a
+
+If your conscience allows it, you can add or remove poles or zeros (without telling your TA) so that the frequency response more easily meets the specifications at the frequencies that are being checked off.
+
+\section{Other}
+simulate stuff in ltspice; how to implement dependent sources
+
+use power rails
+
+electrolytic capacitor polarity
+
+build and test output stage first
+how to set up signal gen
+measure gain and swing
+increase output stage bias current for more output swing for extra credit, input resistance decreases so adjust input stage gain accordingly 
+use metric prefixes in spice
+
+extra credit awarded for two stage, input resistance, and output swing
+
+how to measure input resistance
+\end{document}
